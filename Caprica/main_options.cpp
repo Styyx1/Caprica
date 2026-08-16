@@ -313,7 +313,7 @@ bool parseCommandLineArguments(int argc, char* argv[], caprica::CapricaJobManage
     po::variables_map vm;
     // scan argv for `-pcompiler`
     for (int i = 1; i < argc; i++) {
-      if (_stricmp(argv[i], "--pcompiler") == 0 || _stricmp(argv[i], "-pcompiler") == 0) {
+      if (strcmp(argv[i], "--pcompiler") == 0 || strcmp(argv[i], "-pcompiler") == 0) {
         default_style = pcompiler_style;
         break;
       }

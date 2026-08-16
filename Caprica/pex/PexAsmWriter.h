@@ -20,38 +20,7 @@ struct PexAsmWriter final {
   ~PexAsmWriter() = default;
 
   template <typename T>
-  void writeKV(const char* key, T val) {
-    static_assert(std::is_same_v<T, void>, "Unknown type for the value!");
-  }
-
-  template <>
-  void writeKV(const char* key, time_t val) {
-    ensureIndent();
-    // TODO: Add a comment output of the times in the local time.
-    strm << '.' << key << ' ' << (unsigned long long)val;
-    writeln();
-  }
-
-  template <>
-  void writeKV(const char* key, std::string val) {
-    ensureIndent();
-    strm << '.' << key << " \"" << escapeString(val) << "\"";
-    writeln();
-  }
-
-  template <>
-  void writeKV(const char* key, std::string_view val) {
-    ensureIndent();
-    strm << '.' << key << " \"" << escapeString(std::string(val)) << "\"";
-    writeln();
-  }
-
-  template <>
-  void writeKV(const char* key, PexUserFlags val) {
-    ensureIndent();
-    strm << '.' << key << " " << val.data;
-    writeln();
-  }
+  void writeKV(const char* key, T val);
 
   template <typename... Args>
   void write(std::string_view msg, Args&&... args) {
@@ -126,5 +95,34 @@ private:
     }
   }
 };
+
+template <>
+inline void PexAsmWriter::writeKV(const char* key, time_t val) {
+  ensureIndent();
+  // TODO: Add a comment output of the times in the local time.
+  strm << '.' << key << ' ' << (unsigned long long)val;
+  writeln();
+}
+
+template <>
+inline void PexAsmWriter::writeKV(const char* key, std::string val) {
+  ensureIndent();
+  strm << '.' << key << " \"" << escapeString(val) << "\"";
+  writeln();
+}
+
+template <>
+inline void PexAsmWriter::writeKV(const char* key, std::string_view val) {
+  ensureIndent();
+  strm << '.' << key << " \"" << escapeString(std::string(val)) << "\"";
+  writeln();
+}
+
+template <>
+inline void PexAsmWriter::writeKV(const char* key, PexUserFlags val) {
+  ensureIndent();
+  strm << '.' << key << " " << val.data;
+  writeln();
+}
 
 }}

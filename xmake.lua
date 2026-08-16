@@ -8,7 +8,7 @@ set_license("MIT")
 set_version("0.3.0")
 
 -- require packages
-add_requires("boost", { configs = { filesystem = true, program_options = true, container = true } })
+
 add_requires("pugixml")
 
 option("tests", { default = false, description = "Build tests" })
@@ -26,15 +26,16 @@ namespace("caprica", function()
         add_packages("boost", "pugixml", { public = true })
 
         -- add all source files
-        add_files("caprica/**/**.cpp")
+        add_files("Caprica/**/**.cpp")
 
         if is_kind("binary") then
-            add_files("caprica/**.cpp")
+            add_files("Caprica/**.cpp")
+            add_links("boost_program_options", "boost_filesystem")
         end
 
         -- add all header files
-        add_includedirs("caprica", { public = true })
-        add_headerfiles("caprica/(**.h)")
+        add_includedirs("Caprica", { public = true })
+        add_headerfiles("Caprica/**.h")
 
         -- add flags
         add_cxxflags("cl::/Zc:inline", "cl::/bigobj")

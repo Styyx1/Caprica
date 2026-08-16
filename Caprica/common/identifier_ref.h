@@ -3,13 +3,14 @@
 #include <cstdint>
 #include <cstdlib>
 
+#include <cstring>
 #include <iterator>
 #include <string>
 #include <string_view>
 
 #include <format>
 
-#include <common/UtilMacros.h>
+#include "UtilMacros.h"
 
 namespace caprica {
 
@@ -98,8 +99,7 @@ bool operator!=(const char* x, const identifier_ref& y);
 }
 
 template <>
-struct std::formatter<caprica::identifier_ref>
-{
+struct std::formatter<caprica::identifier_ref> {
   template <class ParseContext>
   constexpr auto parse(ParseContext& ctx) {
     return ctx.begin();

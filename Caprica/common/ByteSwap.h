@@ -1,10 +1,11 @@
 #pragma once
 #include <cassert>
+#include <cstdint>
 #include <type_traits>
 // These are backported from STL C++23
 namespace caprica {
-constexpr uint16_t _Byteswap_ushort(const uint16_t _Val) noexcept {
-  if (std::is_constant_evaluated())
+constexpr std::uint16_t _Byteswap_ushort(const uint16_t _Val) noexcept {
+  if (std::__is_constant_evaluated())
     return static_cast<unsigned short>((_Val << 8) | (_Val >> 8));
   else
 #ifdef _MSC_VER
@@ -15,7 +16,7 @@ constexpr uint16_t _Byteswap_ushort(const uint16_t _Val) noexcept {
 }
 
 constexpr uint32_t _Byteswap_ulong(const uint32_t _Val) noexcept {
-  if (std::is_constant_evaluated())
+  if (std::__is_constant_evaluated())
     return (_Val << 24) | ((_Val << 8) & 0x00FF'0000) | ((_Val >> 8) & 0x0000'FF00) | (_Val >> 24);
   else
 #ifdef _MSC_VER
@@ -26,7 +27,7 @@ constexpr uint32_t _Byteswap_ulong(const uint32_t _Val) noexcept {
 }
 
 constexpr uint64_t _Byteswap_uint64(const uint64_t _Val) noexcept {
-  if (std::is_constant_evaluated()) {
+  if (std::__is_constant_evaluated()) {
     return (_Val << 56) | ((_Val << 40) & 0x00FF'0000'0000'0000) | ((_Val << 24) & 0x0000'FF00'0000'0000) |
            ((_Val << 8) & 0x0000'00FF'0000'0000) | ((_Val >> 8) & 0x0000'0000'FF00'0000) |
            ((_Val >> 24) & 0x0000'0000'00FF'0000) | ((_Val >> 40) & 0x0000'0000'0000'FF00) | (_Val >> 56);
