@@ -1,5 +1,7 @@
 #pragma once
 #include <filesystem>
+
+#include "FSUtils.h"
 namespace caprica {
 struct IInputFile;
 struct IInputFile {
@@ -42,7 +44,7 @@ struct InputFile : public IInputFile {
 struct PCompInputFile : public IInputFile {
   PCompInputFile(const std::filesystem::path& _path,
                  bool noRecurse = true,
-                 bool isFolder = false,
+                 bool isFolder_ = false,
                  const std::filesystem::path& _cwd = "");
   virtual bool resolve() override;
 };

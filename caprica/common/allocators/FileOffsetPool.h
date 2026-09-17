@@ -1,9 +1,9 @@
 #pragma once
 
 #include <assert.h>
-#include <stdlib.h>
-
+#include <cstring>
 #include <memory>
+#include <stdlib.h>
 
 namespace caprica { namespace allocators {
 

@@ -168,11 +168,11 @@ std::string_view findScriptName(const std::string_view& data, const std::string_
     if (next == std::string_view::npos)
       next = data.size() - 1;
     auto line = data.substr(last, next - last);
-    auto begin = line.find_first_not_of(" \t\r");
-    if (begin != std::string_view::npos &&
-        strnicmp(line.substr(begin, startstring.size()).data(), startstring.data(), startstring.size()) == 0) {
+    auto begin = line.find_first_not_of(" \t");
+    auto startSize = startstring.size();
+    if (line.size() > startSize && strnicmp(line.substr(begin, startSize).data(), startstring.data(), startSize) == 0) {
       auto first = line.find_first_not_of(" \t", startstring.size() + begin);
-      return line.substr(first, line.find_first_of(" \t", first) - first);
+      return line.substr(first, line.find_first_of(" \t\r", first) - first);
     }
     last = next + 1;
   }
@@ -687,14 +687,11 @@ void PapyrusCompilationContext::RenameImports(CapricaJobManager* jobManager) {
   }
 
   // remove the children
-  for (auto it = rootNamespace.children.begin(); it != rootNamespace.children.end(); ++it) {
-    if ((*it).first[0] != '!')
-      continue;
-    rootNamespace.children.erase(it);
-    it = rootNamespace.children.begin();
-    if (it == rootNamespace.children.end())
-      break;
-  }
+  for (auto it = rootNamespace.children.begin(); it != rootNamespace.children.end();)
+    if ((*it).first[0] == '!')
+      it = rootNamespace.children.erase(it);
+    else
+      ++it;
 }
 
 bool PapyrusCompilationContext::tryFindType(const identifier_ref& baseNamespace,

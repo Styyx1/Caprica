@@ -19,16 +19,10 @@ struct OptInstruction final {
   bool isDead() const { return instr == nullptr || instr->opCode == PexOpCode::Nop; }
 
   void killInstruction() {
-#if 0
-    instr->opCode = PexOpCode::Nop;
-    instr->args.clear();
-    instr->variadicArgs.clear();
-#else
     delete instr;
     instr = nullptr;
     branchTarget = nullptr;
     lineNumber = 0;
-#endif
   }
 
 private:

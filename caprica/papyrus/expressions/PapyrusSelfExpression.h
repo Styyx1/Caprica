@@ -31,6 +31,7 @@ struct PapyrusSelfExpression final : public PapyrusExpression {
   }
 
   virtual PapyrusType resultType() const override { return type; }
+  virtual PapyrusSelfExpression* asSelfExpression() override { return this; }
 };
 
 }}}

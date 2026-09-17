@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Caprica
+Exec=caprica
+Icon=caprica
+Categories=Development;
+Terminal=true

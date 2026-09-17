@@ -93,15 +93,13 @@ bool InputFile::resolve() {
   if (!normalPath.is_absolute()) {
     absPath = FSUtils::canonicalFS(cwd / normalPath);
     absBaseDir = find_import_dir(absPath);
-    if (absBaseDir.empty()) {
+    if (absBaseDir.empty())
       absBaseDir = getCorrectBaseDir(normalPath, cwd);
-    }
   } else {
     absPath = FSUtils::canonicalFS(normalPath);
     absBaseDir = find_import_dir(absPath);
-    if (absBaseDir.empty()) {
+    if (absBaseDir.empty())
       absBaseDir = absPath.parent_path();
-    }
   }
 
   if (std::filesystem::exists(absPath)) {
@@ -137,13 +135,29 @@ bool ImportDir::resolve() {
 
 PCompInputFile::PCompInputFile(const std::filesystem::path& _path,
                                bool noRecurse,
-                               bool isFolder,
+                               bool isFolder_,
                                const std::filesystem::path& _cwd)
     : IInputFile(_path, noRecurse, _cwd) {
-  isFolder = isFolder;
+  this->isFolder = isFolder_;
 }
 
 bool PCompInputFile::resolve() {
+
+  std::filesystem::path resolvedRaw = rawPath.is_absolute() ? rawPath : FSUtils::canonicalFS(cwd / rawPath);
+
+  if (std::filesystem::exists(resolvedRaw)) {
+    absPath = resolvedRaw;
+    if (std::filesystem::is_directory(resolvedRaw)) {
+      absBaseDir = resolvedRaw;
+      isFolder = true;
+    } else {
+      absBaseDir = find_import_dir(resolvedRaw);
+      if (absBaseDir.empty())
+        absBaseDir = resolvedRaw.parent_path();
+    }
+    resolved = true;
+    return true;
+  }
   std::filesystem::path normalPath = FSUtils::objectNameToPath(rawPath.string());
   if (!isFolder && normalPath.extension().empty())
     normalPath.replace_extension(".psc");

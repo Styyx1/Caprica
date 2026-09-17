@@ -23,7 +23,8 @@ namespace("caprica", function()
         set_kind("$(kind)")
 
         -- bind package dependencies
-        add_packages("boost", "pugixml", { public = true })
+        add_packages("pugixml", { public = true })
+        add_syslinks("boost_filesystem", "boost_program_options", "stdc++fs")
 
         -- add all source files
         add_files("caprica/**/**.cpp")
@@ -35,6 +36,7 @@ namespace("caprica", function()
         -- add all header files
         add_includedirs("caprica", { public = true })
         add_headerfiles("caprica/(**.h)")
+        add_includedirs("/usr/include")
 
         -- add flags
         add_cxxflags("cl::/Zc:inline", "cl::/bigobj")

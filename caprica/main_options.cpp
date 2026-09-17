@@ -5,6 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include <common/CapricaConfig.h>
+#include <common/CapricaInputFile.h>
 #include <common/FSUtils.h>
 #include <common/parser/CapricaPPJParser.h>
 
@@ -127,10 +128,10 @@ void setPPJBool(BoolSetting value, bool& setting) {
 };
 
 caseless_unordered_identifier_map<GameID> gameIDMap = {
-  {"Starfield",  GameID::Starfield},
-  { "Skyrim",    GameID::Skyrim   },
-  { "Fallout4",  GameID::Fallout4 },
-  { "Fallout76", GameID::Fallout76},
+  { "Starfield", GameID::Starfield },
+  { "Skyrim",    GameID::Skyrim    },
+  { "Fallout4",  GameID::Fallout4  },
+  { "Fallout76", GameID::Fallout76 },
 };
 
 bool setGame(std::string gameType) {
@@ -206,6 +207,8 @@ bool parseCommandLineArguments(int argc, char* argv[], caprica::CapricaJobManage
         "Ensure values returned from BetaOnly and DebugOnly functions don't escape, as that will cause invalid code generation.")
       ("disable-implicit-conversion-from-none", po::bool_switch()->default_value(false),
         "Disable implicit conversion from None in most situations where the use of None likely wasn't the author's intention.")
+              ("disable-keywords-as-identifiers", po::bool_switch()->default_value(false),
+        "Disable the ability to use some keywords (e.g. Switch, Parent) as identifiers in select cases.")
       ("skyrim-allow-unknown-events-on-non-native-class", po::value<bool>(&conf::Skyrim::skyrimAllowUnknownEventsOnNonNativeClass)->default_value(false),
         "Allow unknown events to be defined on non-native classes. This is encountered with some scripts in the base game having Events that are not present on ObjectReference.");
 
@@ -305,15 +308,17 @@ bool parseCommandLineArguments(int argc, char* argv[], caprica::CapricaJobManage
     po::options_description commandLineDesc("");
     commandLineDesc.add(visibleDesc).add(hiddenDesc).add(engineLimitsDesc).add(strictChecksDesc).add(pcompilerDesc);
     auto default_style = po::command_line_style::unix_style;
-    auto pcompiler_style = (po::command_line_style::style_t)(
-        po::command_line_style::allow_short | po::command_line_style::allow_long |
-        po::command_line_style::allow_dash_for_short | po::command_line_style::long_allow_adjacent |
-        po::command_line_style::short_allow_adjacent | po::command_line_style::allow_long_disguise);
+    auto pcompiler_style =
+        (po::command_line_style::style_t)(po::command_line_style::allow_short | po::command_line_style::allow_long |
+                                          po::command_line_style::allow_dash_for_short |
+                                          po::command_line_style::long_allow_adjacent |
+                                          po::command_line_style::short_allow_adjacent |
+                                          po::command_line_style::allow_long_disguise);
     bool pCompilerMode = false;
     po::variables_map vm;
     // scan argv for `-pcompiler`
     for (int i = 1; i < argc; i++) {
-      if (_stricmp(argv[i], "--pcompiler") == 0 || _stricmp(argv[i], "-pcompiler") == 0) {
+      if (strcasecmp(argv[i], "--pcompiler") == 0 || strcasecmp(argv[i], "-pcompiler") == 0) {
         default_style = pcompiler_style;
         break;
       }
@@ -468,11 +473,12 @@ bool parseCommandLineArguments(int argc, char* argv[], caprica::CapricaJobManage
       baseOutputDir = outputDir;
 
       conf::General::inputFiles.reserve(conf::General::inputFiles.size() + ppj.folders.size() + ppj.scripts.size());
-      for (auto& f : ppj.folders){     
+      for (auto& f : ppj.folders)
         conf::General::inputFiles.emplace_back(std::make_shared<PCompInputFile>(f.path, f.noRecurse, true, baseDir));
-      }
-      for (auto& f : ppj.scripts)
+      for (auto& f : ppj.scripts) {
+        std::cout << "DEBUG script path: [" << f << "]" << std::endl;
         conf::General::inputFiles.emplace_back(std::make_shared<PCompInputFile>(f, true, false, baseDir));
+      }
       flags = ppj.flags;
     } else { // if we're not doing a project file...
       // ensure cwd is placed first
@@ -560,6 +566,8 @@ bool parseCommandLineArguments(int argc, char* argv[], caprica::CapricaJobManage
       conf::Warnings::warningsToHandleAsErrors.insert(1002);
     } else if (vm["disable-implicit-conversion-from-none"].as<bool>()) {
       conf::Warnings::warningsToHandleAsErrors.insert(1003);
+    } else if (vm["disable-keywords-as-identifiers"].as<bool>()) {
+      conf::Warnings::warningsToHandleAsErrors.insert(1006);
     }
 
     if (vm.count("disable-warning")) {
@@ -654,7 +662,8 @@ bool parseCommandLineArguments(int argc, char* argv[], caprica::CapricaJobManage
           if (FSUtils::extensionAsRef(f).empty())
             f.append(".psc");
         }
-        auto & input = conf::General::inputFiles.emplace_back(std::make_shared<PCompInputFile>(f, !iterateCompiledDirectoriesRecursively, isFolder));
+        auto& input = conf::General::inputFiles.emplace_back(
+            std::make_shared<PCompInputFile>(f, !iterateCompiledDirectoriesRecursively, isFolder));
       }
     } else {
       // normal resolution
@@ -668,14 +677,14 @@ bool parseCommandLineArguments(int argc, char* argv[], caprica::CapricaJobManage
             return false;
           }
         }
-        auto& input = conf::General::inputFiles.emplace_back(std::make_shared<InputFile>(f, !iterateCompiledDirectoriesRecursively));
+        auto& input = conf::General::inputFiles.emplace_back(
+            std::make_shared<InputFile>(f, !iterateCompiledDirectoriesRecursively));
       }
     }
 
     for (auto& input : conf::General::inputFiles) {
-      if (!input){
+      if (!input)
         throw std::runtime_error("Input file is null!");
-      }
       if (!input->resolve()) {
         std::cout << "Unable to locate input file '" << input->get_unresolved_path() << "'." << std::endl;
         return false;

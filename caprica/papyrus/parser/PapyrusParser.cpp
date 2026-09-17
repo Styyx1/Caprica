@@ -360,7 +360,12 @@ Return:
 PapyrusStructMember*
 PapyrusParser::parseStructMember(PapyrusScript*, PapyrusObject*, PapyrusStruct* struc, PapyrusType&& tp) {
   auto mem = alloc->make<PapyrusStructMember>(cur.location, std::move(tp), struc);
-  mem->name = expectConsumeIdentRef();
+  if (cur.type == TokenType::kParent || cur.type == TokenType::kSelf) {
+    mem->name = cur.type == TokenType::kParent ? "parent" : "self";
+    consume();
+  } else {
+    mem->name = expectConsumeIdentRef();
+  }
 
   // Needed because None is a valid default value, and we shouldn't
   // be erroring on it.
@@ -540,7 +545,7 @@ PapyrusFunction* PapyrusParser::parseFunction(
 
       auto param =
           alloc->make<PapyrusFunctionParameter>(cur.location, func->parameters.size(), expectConsumePapyrusType());
-      param->name = expectConsumeIdentRef();
+      param->name = expectConsumeKeywordOrIdentRef();
       if (maybeConsume(TokenType::Equal))
         param->defaultValue = expectConsumePapyrusValue();
       func->parameters.push_back(param);
@@ -1174,6 +1179,26 @@ expressions::PapyrusExpression* PapyrusParser::parseFuncOrIdExpression(PapyrusFu
     default:
       reportingContext.fatal(cur.location, "Unexpected token '{}'!", cur.prettyString());
   }
+}
+
+identifier_ref PapyrusParser::expectConsumeKeywordOrIdentRef() {
+  if (!keywordCanBeIdentifier(cur.type)) {
+    reportingContext.fatal(cur.location,
+                          "Syntax error! Expected valid identifier, got '{}'.",
+                          cur.prettyString());
+  }
+
+  identifier_ref finalId;
+
+  if (cur.type != TokenType::Identifier) {
+    const identifier_ref typeIdentifier = identifier_ref(PapyrusLexer::Token::prettyTokenType(cur.type));
+    reportingContext.warning_W1006_Strict_Keyword_Identifiers(cur.location, typeIdentifier);
+    finalId = typeIdentifier;
+  } else {
+    finalId = cur.val.s;
+  }
+  consume();
+  return finalId;
 }
 
 PapyrusType PapyrusParser::expectConsumePapyrusType() {
