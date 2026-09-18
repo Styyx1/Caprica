@@ -20,53 +20,7 @@ struct PexWriter final : public CapricaBinaryWriter {
   ~PexWriter() = default;
 
   template <typename T>
-  void write(T val) {
-    CapricaBinaryWriter::write<T>(std::forward<T>(val));
-  }
-
-  template <>
-  void write(GameID val) {
-    write<uint16_t>(static_cast<uint16_t>(val));
-  }
-
-  template <>
-  void write(PexString val) {
-    assert(val.index != -1);
-    boundWrite<uint16_t>(val.index);
-  }
-
-  template <>
-  void write(PexUserFlags val) {
-    boundWrite<uint32_t>(val.data);
-  }
-
-  template <>
-  void write(PexValue val) {
-    write<uint8_t>((uint8_t)val.type);
-    switch (val.type) {
-      case PexValueType::None:
-        return;
-      case PexValueType::Identifier:
-      case PexValueType::String:
-        write<PexString>(val.val.s);
-        return;
-      case PexValueType::Integer:
-        write<uint32_t>((uint32_t)val.val.i);
-        return;
-      case PexValueType::Float:
-        write<float>(val.val.f);
-        return;
-      case PexValueType::Bool:
-        write<uint8_t>(val.val.b ? 0x01 : 0x00);
-        return;
-
-      case PexValueType::Label:
-      case PexValueType::TemporaryVar:
-      case PexValueType::Invalid:
-        break;
-    }
-    CapricaReportingContext::logicalFatal("Unknown PexValueType!");
-  }
+  void write(T val);
 
   void beginObject() {
     objectLength = strm.make<uint32_t>();
@@ -83,5 +37,54 @@ private:
   uint32_t* objectLength { nullptr };
   size_t objectStartSize { 0 };
 };
+
+template <typename T>
+inline void PexWriter::write(T val) {
+  CapricaBinaryWriter::write<T>(std::forward<T>(val));
+}
+
+template <>
+inline void PexWriter::write(GameID val) {
+  write<uint16_t>(static_cast<uint16_t>(val));
+}
+
+template <>
+inline void PexWriter::write(PexString val) {
+  assert(val.index != -1);
+  boundWrite<uint16_t>(val.index);
+}
+
+template <>
+inline void PexWriter::write(PexUserFlags val) {
+  boundWrite<uint32_t>(val.data);
+}
+
+template <>
+inline void PexWriter::write(PexValue val) {
+  write<uint8_t>((uint8_t)val.type);
+  switch (val.type) {
+    case PexValueType::None:
+      return;
+    case PexValueType::Identifier:
+    case PexValueType::String:
+      write<PexString>(val.val.s);
+      return;
+    case PexValueType::Integer:
+      write<uint32_t>((uint32_t)val.val.i);
+      return;
+    case PexValueType::Float:
+      write<float>(val.val.f);
+      return;
+    case PexValueType::Bool:
+      write<uint8_t>(val.val.b ? 0x01 : 0x00);
+      return;
+
+    case PexValueType::Label:
+    case PexValueType::TemporaryVar:
+    case PexValueType::Invalid:
+      break;
+  }
+  CapricaReportingContext::logicalFatal("Unknown PexValueType!");
+}
 
 }}

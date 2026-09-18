@@ -41,6 +41,7 @@ The ForEach statement may be used to iterate over arrays or collections. A colle
                 <statement>*
               'EndForEach'
 ```
+
 ### Switch
 The Switch statement may only be used on an `Int` or `String`, and the case values must be literals.
 ```
@@ -51,6 +52,7 @@ The Switch statement may only be used on an `Int` or `String`, and the case valu
                  <statement>*]
              'EndSwitch'
 ```
+
 ### Do-LoopWhile
 The Do-LoopWhile statement is the same as a While statement, with the difference that the body is alway executed at least once.
 ```
@@ -58,9 +60,22 @@ The Do-LoopWhile statement is the same as a While statement, with the difference
                       <statement>*
                     'LoopWhile' <expression>
 ```
+
 ### Break/Continue
 Break and Continue statements are both also supported as part of extensions to the language. Break will cause control to transfer after the innermost Switch, For, ForEach, Do-LoopWhile, or While statement containing the Break statement. Continue will cause control to tranfer to the next iteration of the innermost For, ForEach, Do-LoopWhile, or While statement containing the Continue statement.
+
 ```
 <break> ::= 'Break'
 <continue> ::= 'Continue'
 ```
+
+# Linux AppImage
+
+This is made on an updated CachyOS so it may not work on older distros, I'm new to this and I'm not sure how i could achieve that.  
+The source is here and contributions for the linux versions are welcome. to build it, you need to set the toolchain to clang  
+
+Credits for this linux release:
+
+- <https://github.com/gabriel-andreescu/Caprica> for the commits that differ from Orvid/Caprica:master
+- <https://github.com/SkyrimScriptingBeta/Caprica> anyone who worked on making it available for xmake
+- <https://github.com/Orvid/Caprica> the original  

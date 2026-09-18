@@ -169,10 +169,9 @@ std::string_view findScriptName(const std::string_view& data, const std::string_
       next = data.size() - 1;
     auto line = data.substr(last, next - last);
     auto begin = line.find_first_not_of(" \t");
-    auto startSize = startstring.size();
-    if (line.size() > startSize && strnicmp(line.substr(begin, startSize).data(), startstring.data(), startSize) == 0) {
+    if (strnicmp(line.substr(begin, startstring.size()).data(), startstring.data(), startstring.size()) == 0) {
       auto first = line.find_first_not_of(" \t", startstring.size() + begin);
-      return line.substr(first, line.find_first_of(" \t\r", first) - first);
+      return line.substr(first, line.find_first_of(" \t", first) - first);
     }
     last = next + 1;
   }
@@ -703,8 +702,11 @@ bool PapyrusCompilationContext::tryFindType(const identifier_ref& baseNamespace,
     return false;
 
   while (curNamespace != nullptr) {
+    std::printf("%s", std::format("tryFindType({})\n", typeName).c_str());
     if (curNamespace->tryFindType(typeName, retNode, retStructName))
-      return true;
+      {
+        return true;
+      }
     curNamespace = curNamespace->parent;
   }
 
